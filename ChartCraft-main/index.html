@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlLang">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChartCraft — Turn Data Into Clear Visual Stories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body id="bodyEl" class="min-h-screen theme-bg theme-text">
+    <!-- Toast container (top-right) -->
+    <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Header: compact top bar -->
+    <header class="sticky top-0 z-50 theme-header">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="#" onclick="showLanding(); return false;" class="flex items-center gap-2 font-bold text-xl theme-text">
+                <i class="fas fa-chart-area theme-accent"></i>
+                ChartCraft
+            </a>
+            <button type="button" id="navToggle" onclick="toggleNavPopup()" class="p-2 rounded-lg theme-hover transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="navPopupPanel">
+                <i class="fas fa-bars text-xl theme-accent"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Popup Nav (slide-in from right) -->
+    <div id="navPopupBackdrop" class="nav-popup-backdrop" onclick="closeNavPopup()" aria-hidden="true"></div>
+    <nav id="navPopupPanel" class="nav-popup-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
+        <div class="flex justify-between items-center mb-6">
+            <span class="font-bold text-lg">Menu</span>
+            <button type="button" onclick="closeNavPopup()" class="p-2 rounded-lg theme-hover" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="space-y-2">
+            <li><a href="#" onclick="showLanding(); closeNavPopup(); return false;" class="block px-4 py-3 rounded-lg theme-hover theme-text">Home</a></li>
+            <li><a href="#" onclick="showGenerate(); closeNavPopup(); return false;" class="block px-4 py-3 rounded-lg theme-hover theme-text">Generate</a></li>
+            <li><a href="#" onclick="loadExample(); showGenerate(); closeNavPopup(); return false;" class="block px-4 py-3 rounded-lg theme-hover theme-text">Examples</a></li>
+            <li><a href="#" onclick="showHelp(); closeNavPopup(); return false;" class="block px-4 py-3 rounded-lg theme-hover theme-text">Help</a></li>
+        </ul>
+        <div class="mt-8 pt-6 border-t theme-border space-y-4">
+            <div class="flex gap-1 px-2">
+                <span class="text-sm theme-muted theme-muted">Language:</span>
+                <button type="button" id="langEn" onclick="setLanguage('en')" class="px-2 py-1 rounded text-sm hover:bg-[#fafafa]">EN</button>
+                <button type="button" id="langEs" onclick="setLanguage('es')" class="px-2 py-1 rounded text-sm hover:bg-[#fafafa]">ES</button>
+                <button type="button" id="langHi" onclick="setLanguage('hi')" class="px-2 py-1 rounded text-sm hover:bg-[#fafafa]">हिंदी</button>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="useAIToggle" class="rounded" onchange="toggleAIcontrols(); updateModeBadge();">
+                <span class="text-sm">Use AI</span>
+            </label>
+            <span id="modeBadge" class="block px-2 py-1 rounded text-xs font-medium bg-[#fafafa] text-[#171717]">Rule-based mode</span>
+            <div id="aiControls" class="hidden space-y-2">
+                <select id="aiProvider" class="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm" onchange="updateApiKeyPlaceholder()">
+                    <option value="gemini">Gemini</option>
+                    <option value="openai">OpenAI</option>
+                </select>
+                <input type="password" id="apiKeyInput" placeholder="API key (optional)" class="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landingPage">
+        <!-- Hero -->
+        <section class="min-h-[70vh] flex flex-col lg:flex-row items-center justify-center gap-12 px-4 py-16 lg:py-24">
+            <div class="max-w-2xl text-center lg:text-left">
+                <h1 class="hero-headline mb-4">Turn Data Into Clear Visual Stories — Instantly.</h1>
+                <p class="hero-subheadline mb-8">Upload your dataset, say what you want to see, and ChartCraft will render a polished visualization and provide the exact code to reproduce it.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <button type="button" onclick="scrollToGenerate()" class="chartcraft-btn-primary px-8 py-4 text-lg font-medium">
+                        Try It Now — Upload Data
+                    </button>
+
+                </div>
+            </div>
+            <div class="flex-shrink-0 w-64 h-64 lg:w-80 lg:h-80 opacity-30">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect x="40" y="120" width="25" height="60" fill="#171717"/>
+                    <rect x="75" y="80" width="25" height="100" fill="#171717"/>
+                    <rect x="110" y="100" width="25" height="80" fill="#171717"/>
+                    <rect x="145" y="60" width="25" height="120" fill="#171717"/>
+                    <line x1="30" y1="130" x2="170" y2="130" stroke="#171717" stroke-width="1"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- How it Works -->
+        <section class="py-16 px-4 bg-[#fafafa]">
+            <div class="container mx-auto max-w-5xl">
+                <h2 class="text-2xl font-bold text-center mb-12">How it Works</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="chartcraft-card text-center">
+                        <div class="w-12 h-12 rounded-lg bg-[#171717] text-white flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Upload — CSV, JSON, or Excel</h3>
+                        <p class="text-sm theme-muted">Drag and drop your file or click to browse. Supports standard tabular formats.</p>
+                    </div>
+                    <div class="chartcraft-card text-center">
+                        <div class="w-12 h-12 rounded-lg bg-[#171717] text-white flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Describe — Natural language</h3>
+                        <p class="text-sm theme-muted">e.g. "sales by region" or "average marks by subject". Plain English works.</p>
+                    </div>
+                    <div class="chartcraft-card text-center">
+                        <div class="w-12 h-12 rounded-lg bg-[#171717] text-white flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Generate — Chart + code</h3>
+                        <p class="text-sm theme-muted">Get a polished chart, Chart.js and Python code, and an explanation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why It Works -->
+        <section class="py-16 px-4">
+            <div class="container mx-auto max-w-3xl">
+                <h2 class="text-2xl font-bold text-center mb-8">Why It Works</h2>
+                <ul class="space-y-4 theme-muted">
+                    <li class="flex items-start gap-3"><i class="fas fa-check text-[#171717] mt-1"></i> AI-assisted chart mapping + reliable fallback rules</li>
+                    <li class="flex items-start gap-3"><i class="fas fa-check text-[#171717] mt-1"></i> Reproducible Chart.js + Python code</li>
+                    <li class="flex items-start gap-3"><i class="fas fa-check text-[#171717] mt-1"></i> Easy for non-developers and analysts</li>
+                    <li class="flex items-start gap-3"><i class="fas fa-check text-[#171717] mt-1"></i> Privacy-friendly: no API keys in the frontend</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Feature Highlights -->
+        <section class="py-16 px-4 bg-[#fafafa]">
+            <div class="container mx-auto max-w-5xl">
+                <h2 class="text-2xl font-bold text-center mb-12">Feature Highlights</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="chartcraft-card"><h4 class="font-semibold mb-2">Explainability</h4><p class="text-sm theme-muted">Know why a chart was chosen</p></div>
+                    <div class="chartcraft-card"><h4 class="font-semibold mb-2">Export</h4><p class="text-sm theme-muted">JS and Python code</p></div>
+                    <div class="chartcraft-card"><h4 class="font-semibold mb-2">Responsive</h4><p class="text-sm theme-muted">Charts work on mobile</p></div>
+                    <div class="chartcraft-card"><h4 class="font-semibold mb-2">Accessible</h4><p class="text-sm theme-muted">Keyboard and screen readers</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example / Demo -->
+        <section class="py-16 px-4">
+            <div class="container mx-auto max-w-3xl text-center">
+                <h2 class="text-2xl font-bold mb-4">Try with Sample Data</h2>
+                <p class="theme-muted mb-6">Load example data and generate a chart in seconds.</p>
+                <button type="button" onclick="loadExample(); scrollToGenerate();" class="chartcraft-btn-primary px-8 py-4">
+                    Try with sample data
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-12 px-4 bg-[#fafafa] border-t border-[#e5e5e5]">
+            <div class="container mx-auto max-w-5xl flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <span class="font-bold">ChartCraft</span>
+                    <p class="text-sm theme-muted">Turn data into clear visual stories</p>
+                </div>
+                <div class="flex gap-6">
+                    <a href="#" onclick="showGenerate(); return false;" class="text-sm theme-muted hover:theme-text">Generate</a>
+                    <a href="#" onclick="showHelp(); return false;" class="text-sm theme-muted hover:theme-text">Help</a>
+                    <a href="#" onclick="loadExample(); showGenerate(); return false;" class="text-sm theme-muted hover:theme-text">Examples</a>
+                </div>
+                <p class="text-xs theme-muted">© 2026 ChartCraft — Demo Build • Privacy-first • v1.0.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Generate Page -->
+    <div id="generatePage" class="hidden">
+        <main class="container mx-auto px-4 py-8">
+            <!-- Breadcrumb + CTA -->
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+                <p class="text-sm theme-muted">Generate → ChartCraft</p>
+                <a href="#" id="restoreFromLinkBtn" onclick="restoreFromShareLink(); return false;" class="hidden text-sm text-[#171717] hover:underline">Restore from link</a>
+            </div>
+
+            <div class="flex flex-col gap-8">
+                <!-- Left: Upload + Prompt + Controls -->
+                <div class="space-y-6">
+                    <!-- Upload Card -->
+                    <div class="chartcraft-card">
+                        <h2 class="text-lg font-semibold mb-4">Upload Dataset</h2>
+                        <div id="uploadArea" class="border-2 border-dashed border-[#e5e5e5] rounded-lg p-8 text-center hover:border-[#171717] transition-colors cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl theme-muted mb-4"></i>
+                            <p class="theme-muted mb-2">Drag & drop CSV/JSON or click to browse</p>
+                            <p class="text-sm theme-muted mb-4">.csv, .json, .xlsx, .xls, .txt</p>
+                            <button type="button" onclick="document.getElementById('fileInput').click()" class="chartcraft-btn-primary px-6 py-2">
+                                Browse Files
+                            </button>
+                            <input type="file" id="fileInput" accept=".csv,.json,.txt,.xlsx,.xls,text/csv,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple class="hidden" onchange="handleFileUpload(event)">
+                        </div>
+                        <div id="fileInfo" class="mt-4 hidden">
+                            <div class="flex items-center justify-between p-3 bg-[#fafafa] rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-file-csv text-[#171717]"></i>
+                                    <span id="fileName" class="text-sm font-medium"></span>
+                                </div>
+                                <button type="button" onclick="clearFile()" class="theme-muted hover:theme-text"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="mt-2 space-y-1">
+                            <a href="#" onclick="loadExample(); return false;" class="block text-sm text-[#525252] hover:text-[#171717]">Use example data</a>
+                            <span class="text-xs theme-muted">Or load: <a href="#" onclick="loadExampleFromFile('sample_marks.csv'); return false;" class="hover:text-[#171717]">sample_marks.csv</a> | <a href="#" onclick="loadExampleFromFile('example_data.csv'); return false;" class="hover:text-[#171717]">example_data.csv</a></span>
+                        </div>
+                    </div>
+
+                    <!-- Prompt Input -->
+                    <div class="chartcraft-card">
+                        <h2 class="text-lg font-semibold mb-4">Describe Your Visualization</h2>
+                        <label class="block text-sm theme-muted mb-2">Select chart type</label>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button type="button" data-chart-type="bar" class="chart-type-btn px-4 py-2 rounded-lg border bg-white theme-text hover:bg-[#fafafa] transition-colors"><i class="fas fa-chart-bar mr-2"></i>Bar</button>
+                            <button type="button" data-chart-type="line" class="chart-type-btn px-4 py-2 rounded-lg border bg-white theme-text hover:bg-[#fafafa] transition-colors"><i class="fas fa-chart-line mr-2"></i>Line</button>
+                            <button type="button" data-chart-type="pie" class="chart-type-btn px-4 py-2 rounded-lg border bg-white theme-text hover:bg-[#fafafa] transition-colors"><i class="fas fa-chart-pie mr-2"></i>Pie</button>
+                            <button type="button" data-chart-type="scatter" class="chart-type-btn px-4 py-2 rounded-lg border bg-white theme-text hover:bg-[#fafafa] transition-colors"><i class="fas fa-braille mr-2"></i>Scatter</button>
+                        </div>
+                        <label class="block text-sm theme-muted mb-2">Your prompt</label>
+                        <input type="text" id="promptInput" placeholder='e.g. "average marks by subject" or "sales by region this year"' class="chartcraft-input w-full mb-4" />
+                        <p class="text-xs theme-muted mb-2">Quick examples:</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button type="button" onclick="addPromptTemplate('Average marks by subject')" class="prompt-chip px-3 py-1.5 rounded-lg text-sm bg-[#fafafa] hover:bg-[#e5e5e5] theme-text">Avg marks by subject</button>
+                            <button type="button" onclick="addPromptTemplate('Sales by region this year')" class="prompt-chip px-3 py-1.5 rounded-lg text-sm bg-[#fafafa] hover:bg-[#e5e5e5] theme-text">Sales by region</button>
+                            <button type="button" onclick="addPromptTemplate('Price vs Rating scatter plot')" class="prompt-chip px-3 py-1.5 rounded-lg text-sm bg-[#fafafa] hover:bg-[#e5e5e5] theme-text">Price vs Rating</button>
+                            <button type="button" onclick="addPromptTemplate('Market share distribution as pie chart')" class="prompt-chip px-3 py-1.5 rounded-lg text-sm bg-[#fafafa] hover:bg-[#e5e5e5] theme-text">Market share</button>
+                        </div>
+                        <button onclick="generateVisualization()" id="generateBtn" disabled class="chartcraft-btn-primary w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chart-bar mr-2"></i>Generate
+                        </button>
+                    </div>
+
+                    <!-- Data Preview -->
+                    <div id="dataPreview" class="chartcraft-card hidden">
+                        <h2 class="text-lg font-semibold mb-4">Data Preview</h2>
+                        <div class="overflow-x-auto max-h-48">
+                            <table id="previewTable" class="min-w-full divide-y divide-[#e5e5e5] text-sm">
+                                <thead class="bg-[#fafafa]"></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <p class="mt-4 text-sm theme-muted"><span id="dataStats"></span></p>
+                        <button type="button" onclick="openDataPreviewModal()" class="mt-2 text-sm text-[#171717] hover:underline">View more</button>
+                    </div>
+                </div>
+
+                <!-- Right: Chart + Tabs -->
+                <div class="space-y-6">
+                    <div id="visualizationContainer" class="chartcraft-card hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <div role="tablist" class="flex gap-2">
+                                <button type="button" role="tab" aria-selected="true" data-tab="viz" class="tab-btn px-4 py-2 rounded-lg font-medium bg-[#171717] text-white">Visualization</button>
+                                <button type="button" role="tab" aria-selected="false" data-tab="code" class="tab-btn px-4 py-2 rounded-lg font-medium bg-[#fafafa] text-[#171717] hover:bg-[#e5e5e5]">Code</button>
+                                <button type="button" role="tab" aria-selected="false" data-tab="explanation" class="tab-btn px-4 py-2 rounded-lg font-medium bg-[#fafafa] text-[#171717] hover:bg-[#e5e5e5]">Explanation</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="downloadChart()" class="chartcraft-btn-secondary px-3 py-1.5 text-sm"><i class="fas fa-download mr-1"></i>PNG</button>
+                                <button type="button" onclick="copyShareLink()" class="chartcraft-btn-secondary px-3 py-1.5 text-sm"><i class="fas fa-link mr-1"></i>Copy link</button>
+                                <button type="button" onclick="resetVisualization()" class="chartcraft-btn-secondary px-3 py-1.5 text-sm"><i class="fas fa-redo mr-1"></i>Reset</button>
+                            </div>
+                        </div>
+
+                        <div id="tabViz" class="tab-panel active">
+                            <div id="columnMappingSection" class="mb-4 hidden p-4 bg-[#fafafa] rounded-lg">
+                                <h3 class="text-sm font-semibold mb-2">Column Mapping</h3>
+                                <div class="flex flex-wrap gap-4 items-end">
+                                    <div><label class="block text-xs theme-muted mb-1" id="xLabel">X-axis</label><select id="columnX" class="chartcraft-input text-sm py-2" onchange="applyColumnMapping()"></select></div>
+                                    <div><label class="block text-xs theme-muted mb-1">Y-axis</label><select id="columnY" class="chartcraft-input text-sm py-2" onchange="applyColumnMapping()"></select></div>
+                                    <div><label class="block text-xs theme-muted mb-1">Label</label><select id="columnLabel" class="chartcraft-input text-sm py-2" onchange="applyColumnMapping()"></select></div>
+                                    <div><label class="block text-xs theme-muted mb-1">Aggregation</label><select id="columnAgg" class="chartcraft-input text-sm py-2" onchange="applyColumnMapping()"><option value="sum">Sum</option><option value="avg">Avg</option><option value="count">Count</option><option value="min">Min</option><option value="max">Max</option></select></div>
+                                </div>
+                            </div>
+                            <div id="pieTopNControl" class="mb-4 hidden flex flex-wrap items-center gap-2">
+                                <span class="text-sm theme-muted">Show top:</span>
+                                <button type="button" onclick="applyPieTopN(5)" class="pie-topn-btn px-2 py-1 rounded text-sm bg-[#fafafa] hover:bg-[#e5e5e5]">5</button>
+                                <button type="button" onclick="applyPieTopN(8)" class="pie-topn-btn px-2 py-1 rounded text-sm bg-[#fafafa] hover:bg-[#e5e5e5]">8</button>
+                                <button type="button" onclick="applyPieTopN(10)" class="pie-topn-btn px-2 py-1 rounded text-sm bg-[#fafafa] hover:bg-[#e5e5e5]">10</button>
+                                <button type="button" onclick="applyPieTopN(999)" class="pie-topn-btn px-2 py-1 rounded text-sm bg-[#fafafa] hover:bg-[#e5e5e5]">All</button>
+                            </div>
+                            <div class="chart-container chart-entrance" id="chartWrapper">
+                                <canvas id="chartCanvas"></canvas>
+                            </div>
+                            <div id="chartDescription" class="mt-4 p-4 bg-[#fafafa] rounded-lg">
+                                <p class="text-sm theme-text"></p>
+                            </div>
+                        </div>
+
+                        <div id="tabCode" class="tab-panel hidden">
+                            <div class="flex justify-end gap-2 mb-4">
+                                <button type="button" onclick="copyCode()" class="chartcraft-btn-secondary px-3 py-1.5 text-sm"><i class="fas fa-copy mr-1"></i>Copy</button>
+                                <button type="button" onclick="exportCode('javascript')" class="chartcraft-btn-secondary px-3 py-1.5 text-sm">Export JS</button>
+                                <button type="button" onclick="exportCode('python')" class="chartcraft-btn-secondary px-3 py-1.5 text-sm">Export Python</button>
+                            </div>
+                            <pre id="codeDisplay" class="bg-[#171717] text-[#fafafa] p-4 rounded-lg overflow-x-auto text-sm custom-scrollbar"></pre>
+                        </div>
+
+                        <div id="tabExplanation" class="tab-panel hidden">
+                            <div id="explanationContent" class="prose prose-sm max-w-none theme-text"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="chartcraft-card">
+                        <h3 class="font-semibold mb-3">Pro Tips</h3>
+                        <ul class="space-y-2 text-sm theme-muted">
+                            <li>• Be specific about columns for axes and grouping</li>
+                            <li>• Mention chart types: bar, line, pie, scatter</li>
+                            <li>• Request aggregations: sum, average, count</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Data Preview Modal -->
+    <div id="dataPreviewModal" class="data-preview-modal" role="dialog" aria-modal="true" aria-label="Full data preview" onclick="if(event.target===this)closeDataPreviewModal()">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-[#e5e5e5]">
+                <h3 class="font-semibold">Data Preview</h3>
+                <button type="button" onclick="closeDataPreviewModal()" class="p-2 hover:bg-[#fafafa] rounded" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="overflow-auto p-4 flex-1">
+                <table id="dataPreviewModalTable" class="min-w-full divide-y divide-[#e5e5e5] text-sm"></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Suggestion Panel -->
+    <div id="aiSuggestionPanel" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-40" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-xl p-6 max-w-md shadow-xl">
+            <h3 class="text-lg font-semibold mb-3">AI Suggestion</h3>
+            <p id="aiSuggestionText" class="text-sm theme-muted mb-4"></p>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="acceptAISuggestion()" class="chartcraft-btn-primary px-4 py-2">Accept</button>
+                <button type="button" onclick="editAISuggestion()" class="chartcraft-btn-secondary px-4 py-2">Edit manually</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Help">
+        <div class="bg-white rounded-xl p-8 max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">How to Use ChartCraft</h2>
+                <button type="button" onclick="closeHelp()" class="p-2 hover:bg-[#fafafa] rounded" aria-label="Close"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="space-y-4 theme-muted">
+                <div><h3 class="font-semibold theme-text mb-2">1. Upload Your Data</h3><p>Supports CSV and JSON files. Drag and drop or click to browse.</p></div>
+                <div><h3 class="font-semibold theme-text mb-2">2. Describe Your Visualization</h3><p>Use natural language. Be specific about chart types and columns.</p></div>
+                <div><h3 class="font-semibold theme-text mb-2">3. (Optional) Use AI</h3><p>Check Use AI in the menu. Choose OpenAI or Gemini. API key optional if set on server.</p></div>
+                <div><h3 class="font-semibold theme-text mb-2">4. Generate</h3><p>Click Generate. Download the chart or copy/export the code.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed AI Assistant button (bottom-right) -->
+    <button type="button" id="chatAssistantBtn" onclick="toggleChatModal()" class="chat-assistant-btn" aria-label="Open AI Assistant" title="AI Assistant">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Chat Assistant modal -->
+    <div id="chatModalBackdrop" class="chat-modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeChatModal()"></div>
+    <div id="chatModal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chatModalTitle" aria-hidden="true">
+        <div class="chat-modal-panel">
+            <div class="chat-modal-header">
+                <h2 id="chatModalTitle" class="font-bold text-lg theme-text">ChartCraft — AI Assistant</h2>
+                <button type="button" onclick="closeChatModal()" class="chat-modal-close" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="chat-modal-hint theme-muted text-sm">Ask about the uploaded dataset or the current chart.</p>
+            <p class="chat-privacy text-xs theme-muted mt-1">This assistant uses the current session context (uploaded data & chart). It will only answer questions about the data and visualization.</p>
+            <div class="chat-modal-body">
+                <div class="chat-context-panel" id="chatContextPanel">
+                    <button type="button" class="chat-context-toggle theme-text" id="chatContextToggle" onclick="toggleChatContext()" aria-expanded="true">Context</button>
+                    <div id="chatContextContent" class="chat-context-content">
+                        <p id="chatContextSummary" class="text-sm theme-muted">No dataset loaded. Upload data and generate a chart to see context.</p>
+                        <div id="chatContextChartWrap" class="chat-context-chart hidden">
+                            <img id="chatContextChartImg" alt="Current chart" class="chat-context-chart-img">
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages-wrap">
+                    <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
+                </div>
+            </div>
+            <div class="chat-modal-footer">
+                <button type="button" onclick="clearChatHistory()" class="chat-btn-secondary text-sm">Clear conversation</button>
+                <div class="chat-input-row">
+                    <input type="text" id="chatInput" class="chat-input theme-text" placeholder="Ask about the dataset or chart..." maxlength="2000" aria-label="Chat message">
+                    <button type="button" id="chatSendBtn" onclick="sendChatMessage()" class="chat-send-btn" aria-label="Send">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

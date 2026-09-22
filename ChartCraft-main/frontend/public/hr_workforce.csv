@@ -1,0 +1,17 @@
+Employee_ID,Department,Role,Salary_k,Experience_Years,Satisfaction_Score,Performance_Rating,Attrition
+EMP-101,Engineering,Software Engineer,125,4,4.2,4,No
+EMP-102,Engineering,Tech Lead,165,8,3.8,5,No
+EMP-103,Marketing,Growth Specialist,85,3,3.5,3,Yes
+EMP-104,Sales,Account Executive,95,5,4.0,4,No
+EMP-105,Sales,Sales Manager,140,9,3.1,4,Yes
+EMP-106,Product,Product Manager,135,6,4.5,5,No
+EMP-107,Engineering,DevOps Engineer,115,5,4.1,4,No
+EMP-108,Human Resources,HR Business Partner,80,4,4.6,4,No
+EMP-109,Finance,Financial Analyst,90,3,3.9,3,No
+EMP-110,Engineering,Data Scientist,130,5,4.4,5,No
+EMP-111,Marketing,Content Strategist,75,2,2.9,3,Yes
+EMP-112,Sales,SDR Representative,65,1,3.4,3,Yes
+EMP-113,Design,UX Designer,105,4,4.3,4,No
+EMP-114,Engineering,Senior Architect,185,12,4.7,5,No
+EMP-115,Product,Associate PM,92,2,3.7,3,No
+EMP-116,Finance,Controller,150,10,4.0,4,No

@@ -1,0 +1,16 @@
+Ticker,Company,Sector,Market_Cap_B,Revenue_B,Net_Income_B,PE_Ratio,Dividend_Yield
+AAPL,Apple Inc,Consumer Electronics,2950.4,383.2,96.9,31.2,0.55
+MSFT,Microsoft Corp,Software Infrastructure,3120.8,245.1,88.1,35.4,0.72
+NVDA,NVIDIA Corp,Semiconductors,2880.6,120.8,61.4,48.6,0.08
+GOOGL,Alphabet Inc,Internet Content,2140.2,328.2,82.4,26.5,0.48
+AMZN,Amazon.com,E-Commerce & Cloud,1980.5,590.7,37.6,41.2,0.00
+META,Meta Platforms,Social Media,1280.4,142.7,46.5,27.8,0.35
+TSLA,Tesla Inc,Automotive & Clean Energy,790.3,97.6,14.9,56.8,0.00
+AVGO,Broadcom Inc,Semiconductors,720.5,42.6,14.1,38.2,1.25
+ORCL,Oracle Corp,Enterprise Software,390.2,52.9,10.4,29.4,1.15
+ADBE,Adobe Inc,Design Software,230.8,19.4,5.4,36.1,0.00
+CRM,Salesforce Inc,Cloud CRM,270.4,34.8,4.1,44.2,0.40
+AMD,Advanced Micro Devices,Semiconductors,250.6,22.6,0.85,62.4,0.00
+INTC,Intel Corp,Semiconductors,135.2,54.2,1.6,24.8,1.45
+CSCO,Cisco Systems,Networking,195.4,53.8,12.6,15.8,3.20
+NFLX,Netflix Inc,Entertainment Streaming,280.2,33.7,5.4,42.5,0.00

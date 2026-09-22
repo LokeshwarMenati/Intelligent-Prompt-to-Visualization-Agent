@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Python Virtual Environments & Cache
+venv/
+**/venv/
+.venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+**/pytest_cache/
+
+# Build & Output
+dist/
+**/dist/
+build/
+**/build/
+
+# Snapshots & System
+.snapshots/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Local Secrets
+.env
+.env.local
+.env.*.local
