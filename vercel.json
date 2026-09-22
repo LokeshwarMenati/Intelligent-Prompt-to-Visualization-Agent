@@ -1,0 +1,14 @@
+{
+  "buildCommand": "cd ChartCraft-main/frontend && npm install && npm run build",
+  "outputDirectory": "ChartCraft-main/frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/ChartCraft-main/frontend/dist/$1"
+    }
+  ]
+}

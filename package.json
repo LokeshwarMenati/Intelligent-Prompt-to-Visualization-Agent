@@ -1,0 +1,8 @@
+{
+  "name": "intelligent-prompt-to-visualization-agent",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd ChartCraft-main/frontend && npm install && npm run build"
+  }
+}
